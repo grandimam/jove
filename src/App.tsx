@@ -41,6 +41,7 @@ import {
   Clock,
 } from 'lucide-react';
 import AgentMark from './AgentMark';
+import HomePage from './HomePage';
 import ModelPicker from './ModelPicker';
 import PaneDivider from './PaneDivider';
 import {
@@ -82,6 +83,7 @@ async function api(path: string, body?: unknown, method?: string) {
 const AppContext = createContext<any>(null);
 export default function App() {
   const [loaded, setLoaded] = useState(false);
+  const [home, setHome] = useState(true);
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(() => {
     try {
@@ -331,7 +333,10 @@ export default function App() {
         workId,
         projectId,
         setProjectId,
-        setWorkId,
+        setWorkId: (id: string) => {
+          setWorkId(id);
+          setHome(false);
+        },
         setRunId,
         setRunTab,
         busy,
@@ -351,164 +356,168 @@ export default function App() {
             onClick={() => setNavigationOpen(false)}
           />
         )}
-        <aside className={graphite('sidebar') + (navigationOpen ? '' : ' max-md:hidden')}>
-          <a
-            className={graphite('brand')}
-            aria-label="Jove home"
-            draggable={false}
-            onDragStart={(e) => e.preventDefault()}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setProjectId('');
-              selectWork('');
-            }}
-          >
-            <AgentMark animated className={graphite('brand-mark')} />
-            <JoveWordmark />
-          </a>
-          <button
-            className={graphite('navigation-collapse')}
-            aria-label="Collapse navigation"
-            onClick={() => setNavigationCollapsed(true)}
-          >
-            <PanelLeftClose size={16} />
-          </button>
-          <div className={graphite('sidebar-scroll')}>
-            <div className={graphite('section-label')}>
-              PROJECTS
-              <button aria-label="Import project" onClick={() => setModal('project')}>
-                <Plus size={17} />
+        {!home && (
+          <>
+            <aside className={graphite('sidebar') + (navigationOpen ? '' : ' max-md:hidden')}>
+              <a
+                className={graphite('brand')}
+                aria-label="Jove home"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setHome(true);
+                  setNavigationOpen(false);
+                }}
+              >
+                <AgentMark animated className={graphite('brand-mark')} />
+                <JoveWordmark />
+              </a>
+              <button
+                className={graphite('navigation-collapse')}
+                aria-label="Collapse navigation"
+                onClick={() => setNavigationCollapsed(true)}
+              >
+                <PanelLeftClose size={16} />
               </button>
-            </div>
-            {state.projects.map((p) => (
-              <div key={p.id} className="group/project relative">
-                <button
-                  aria-label={p.name}
-                  title={p.path}
-                  className={
-                    graphite('nav-row ' + (p.id === projectId ? 'selected' : '')) + ' pr-9'
-                  }
-                  onClick={() => {
-                    setProjectId(p.id);
-                    selectWork(
-                      state.works.find((w) => w.projectId === p.id && w.status !== 'archived')
-                        ?.id || '',
-                    );
-                  }}
-                >
-                  <span className={graphite('project-symbol')}>
-                    <Blocks size={18} />
-                  </span>
-                  <span className={graphite('project-name')}>
-                    {p.name}
-                    <small>{p.path}</small>
-                  </span>
-                </button>
-                <button
-                  className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded text-muted opacity-0 hover:bg-neutral hover:text-error group-hover/project:opacity-100 focus:opacity-100 max-md:opacity-100"
-                  aria-label={`Remove ${p.name}`}
-                  title="Remove project; keep files and saved work"
-                  disabled={busy}
-                  onClick={() =>
-                    act(async () => {
-                      await api(`/projects/${p.id}`, {}, 'DELETE');
-                      if (p.id === projectId) {
-                        const next = state.projects.find((item) => item.id !== p.id);
-                        setProjectId(next?.id || '');
-                        selectWork(
-                          state.works.find(
-                            (w) => w.projectId === next?.id && w.status !== 'archived',
-                          )?.id || '',
-                        );
-                      }
-                      setToast(`${p.name} removed · Files and saved work preserved`);
-                    })
-                  }
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-            <button
-              className={graphite('nav-add')}
-              aria-label="Import project"
-              onClick={() => setModal('project')}
-            >
-              <Plus size={14} />
-              Import project
-            </button>
-            {project && (
-              <>
-                <div className={graphite('divider')} />
+              <div className={graphite('sidebar-scroll')}>
                 <div className={graphite('section-label')}>
-                  TASKS
-                  {active && (
-                    <button aria-label="New task" onClick={() => openHandoff(active.id)}>
-                      <Plus size={17} />
-                    </button>
-                  )}
+                  PROJECTS
+                  <button aria-label="Import project" onClick={() => setModal('project')}>
+                    <Plus size={17} />
+                  </button>
                 </div>
-                <TaskNavigation
-                  projectId={project.id}
-                  selectedRunId={runId}
-                  onSelectWork={selectWork}
-                />
-                <div className={graphite('divider')} />
-                <div className={graphite('section-label')}>AGENTS</div>
-                <div aria-label="Agents">
-                  {(
-                    state.agents || [
-                      {
-                        id: 'security',
-                        name: 'Security',
-                        description: 'Reviews authentication and permissions.',
-                        status: 'idle',
-                        investigationIds: [],
-                      },
-                      {
-                        id: 'testing',
-                        name: 'Testing',
-                        description: 'Investigates failures and coverage.',
-                        status: 'idle',
-                        investigationIds: [],
-                      },
-                      {
-                        id: 'architecture',
-                        name: 'Architecture',
-                        description: 'Traces structure and dependencies.',
-                        status: 'idle',
-                        investigationIds: [],
-                      },
-                    ]
-                  ).map((agent) => (
-                    <div
-                      key={agent.id}
-                      title={agent.description}
-                      className="flex min-h-9 items-center gap-3 px-2.5 text-[13px] text-muted"
+                {state.projects.map((p) => (
+                  <div key={p.id} className="group/project relative">
+                    <button
+                      aria-label={p.name}
+                      title={p.path}
+                      className={
+                        graphite('nav-row ' + (p.id === projectId ? 'selected' : '')) + ' pr-9'
+                      }
+                      onClick={() => {
+                        setProjectId(p.id);
+                        selectWork(
+                          state.works.find((w) => w.projectId === p.id && w.status !== 'archived')
+                            ?.id || '',
+                        );
+                      }}
                     >
-                      <span
-                        className={
-                          'size-1.5 rounded-full ' +
-                          (agent.status === 'running'
-                            ? 'animate-pulse bg-[#817398]'
-                            : 'bg-[#bcb8b1]')
-                        }
-                      />
-                      <span>{agent.name}</span>
-                      {agent.status === 'running' && (
-                        <span className="ml-auto text-[10px]">Working</span>
+                      <span className={graphite('project-symbol')}>
+                        <Blocks size={18} />
+                      </span>
+                      <span className={graphite('project-name')}>
+                        {p.name}
+                        <small>{p.path}</small>
+                      </span>
+                    </button>
+                    <button
+                      className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded text-muted opacity-0 hover:bg-neutral hover:text-error group-hover/project:opacity-100 focus:opacity-100 max-md:opacity-100"
+                      aria-label={`Remove ${p.name}`}
+                      title="Remove project; keep files and saved work"
+                      disabled={busy}
+                      onClick={() =>
+                        act(async () => {
+                          await api(`/projects/${p.id}`, {}, 'DELETE');
+                          if (p.id === projectId) {
+                            const next = state.projects.find((item) => item.id !== p.id);
+                            setProjectId(next?.id || '');
+                            selectWork(
+                              state.works.find(
+                                (w) => w.projectId === next?.id && w.status !== 'archived',
+                              )?.id || '',
+                            );
+                          }
+                          setToast(`${p.name} removed · Files and saved work preserved`);
+                        })
+                      }
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  className={graphite('nav-add')}
+                  aria-label="Import project"
+                  onClick={() => setModal('project')}
+                >
+                  <Plus size={14} />
+                  Import project
+                </button>
+                {project && (
+                  <>
+                    <div className={graphite('divider')} />
+                    <div className={graphite('section-label')}>
+                      TASKS
+                      {active && (
+                        <button aria-label="New task" onClick={() => openHandoff(active.id)}>
+                          <Plus size={17} />
+                        </button>
                       )}
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </aside>
-        <PaneDivider region="navigation" />
+                    <TaskNavigation
+                      projectId={project.id}
+                      selectedRunId={runId}
+                      onSelectWork={selectWork}
+                    />
+                    <div className={graphite('divider')} />
+                    <div className={graphite('section-label')}>AGENTS</div>
+                    <div aria-label="Agents">
+                      {(
+                        state.agents || [
+                          {
+                            id: 'security',
+                            name: 'Security',
+                            description: 'Reviews authentication and permissions.',
+                            status: 'idle',
+                            investigationIds: [],
+                          },
+                          {
+                            id: 'testing',
+                            name: 'Testing',
+                            description: 'Investigates failures and coverage.',
+                            status: 'idle',
+                            investigationIds: [],
+                          },
+                          {
+                            id: 'architecture',
+                            name: 'Architecture',
+                            description: 'Traces structure and dependencies.',
+                            status: 'idle',
+                            investigationIds: [],
+                          },
+                        ]
+                      ).map((agent) => (
+                        <div
+                          key={agent.id}
+                          title={agent.description}
+                          className="flex min-h-9 items-center gap-3 px-2.5 text-[13px] text-muted"
+                        >
+                          <span
+                            className={
+                              'size-1.5 rounded-full ' +
+                              (agent.status === 'running'
+                                ? 'animate-pulse bg-[#817398]'
+                                : 'bg-[#bcb8b1]')
+                            }
+                          />
+                          <span>{agent.name}</span>
+                          {agent.status === 'running' && (
+                            <span className="ml-auto text-[10px]">Working</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </aside>
+            <PaneDivider region="navigation" />
+          </>
+        )}
         <main className={graphite('main')}>
-          {navigationCollapsed && (
+          {!home && navigationCollapsed && (
             <button
               className={graphite('icon-button') + ' m-2 max-md:hidden'}
               aria-label="Expand navigation"
@@ -517,15 +526,17 @@ export default function App() {
               <Menu size={18} />
             </button>
           )}
-          <button
-            className="m-2 flex size-9 shrink-0 items-center justify-center rounded hover:bg-selection md:hidden"
-            aria-label="Toggle navigation"
-            aria-expanded={navigationOpen}
-            onClick={() => setNavigationOpen(!navigationOpen)}
-          >
-            <Menu size={18} />
-          </button>
-          {active && !run && (
+          {!home && (
+            <button
+              className="m-2 flex size-9 shrink-0 items-center justify-center rounded hover:bg-selection md:hidden"
+              aria-label="Toggle navigation"
+              aria-expanded={navigationOpen}
+              onClick={() => setNavigationOpen(!navigationOpen)}
+            >
+              <Menu size={18} />
+            </button>
+          )}
+          {!home && active && !run && (
             <button
               className={graphite('mobile-output-toggle')}
               onClick={() => setCandidateOpen(!candidateOpen)}
@@ -547,6 +558,19 @@ export default function App() {
 
           {!loaded ? (
             <WorkspaceLoading />
+          ) : home ? (
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <HomePage
+                state={state}
+                onImport={() => setModal('project')}
+                onOpen={(id, selectedWork, selectedTab) => {
+                  setProjectId(id);
+                  selectWork(selectedWork);
+                  if (selectedTab) setActiveId(selectedTab);
+                  setHome(false);
+                }}
+              />
+            </div>
           ) : run ? (
             <section className={graphite('execution')}>
               <header className={graphite('execution-head')}>

@@ -1,10 +1,14 @@
 import React from 'react';
 
-export default function JoveWordmark() {
+export default function JoveWordmark({ hero = false }: { hero?: boolean }) {
   return (
     <span
-      aria-hidden="true"
-      className="select-none text-[34px] font-bold italic leading-none tracking-[-0.055em] text-[#393047] [font-family:Georgia,serif]"
+      aria-label={hero ? 'Jove' : undefined}
+      aria-hidden={hero ? undefined : true}
+      className={
+        'select-none pr-1 font-normal italic leading-none tracking-[-0.035em] text-[#504457] [font-family:Georgia,serif] ' +
+        (hero ? '-mt-1 text-[64px] sm:text-[76px]' : 'text-[34px]')
+      }
     >
       jove
     </span>

@@ -39,7 +39,12 @@ async function setup(stepDelay = 25) {
       init,
     )) as typeof fetch;
   render(<App />);
-  await screen.findByRole('tab', { name: 'General' });
+  await userEvent
+    .setup({ document: dom.window.document })
+    .click(await screen.findByRole('button', { name: 'Open ' + backend.state.projects[0].name }));
+  await userEvent
+    .setup({ document: dom.window.document })
+    .click(await screen.findByRole('tab', { name: 'General' }));
   return {
     backend,
     request: (route: string, body: unknown, method = 'POST') =>
@@ -279,7 +284,7 @@ test('workspace loading shows Jove until the initial state arrives', async () =>
         ),
       );
     });
-    await screen.findByRole('heading', { name: 'Projects' });
+    await screen.findByRole('heading', { name: 'What are we figuring out today?' });
     assert.equal(screen.queryByRole('status'), null);
   } finally {
     cleanup();
@@ -382,6 +387,32 @@ test('new work starts with a centered composer and moves it below the first conv
     await ctx.user.click(within(panel).getByRole('button', { name: 'Send message' }));
     await waitFor(() => assert.equal(panel.classList.contains('empty-conversation'), false));
     await within(panel).findByText('Inspect this codebase', { exact: true });
+  } finally {
+    await ctx.close();
+  }
+});
+
+test('home resumes a project and its examples do not create conversations or tasks', async () => {
+  const ctx = await setup();
+  try {
+    const tabs = ctx.backend.state.investigations.length;
+    const tasks = ctx.backend.state.runs.length;
+    await ctx.user.click(screen.getByRole('link', { name: 'Jove home' }));
+    assert.ok(screen.getByRole('heading', { name: 'What are we figuring out today?' }));
+    assert.equal(screen.queryByRole('navigation', { name: 'Tasks' }), null);
+    await ctx.user.click(screen.getByRole('button', { name: 'Preview clipping into a new tab' }));
+    assert.ok(screen.getByText('Context ready. What would you like to know?'));
+    await ctx.user.click(screen.getByRole('button', { name: 'Preview starting a task' }));
+    assert.ok(screen.getByText('Ready to review. You decide what ships.'));
+    assert.equal(ctx.backend.state.investigations.length, tabs);
+    assert.equal(ctx.backend.state.runs.length, tasks);
+    await ctx.user.click(screen.getByRole('button', { name: 'Open a project' }));
+    await screen.findByRole('dialog', { name: 'Import a project' });
+    await ctx.user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await ctx.user.click(
+      screen.getByRole('button', { name: 'Open ' + ctx.backend.state.projects[0].name }),
+    );
+    await screen.findByRole('navigation', { name: 'Investigations' });
   } finally {
     await ctx.close();
   }
