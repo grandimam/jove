@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+/* PDF §3 / §11: shared design tokens only. Component styles live in paper.ts. */
+:root {
+  color-scheme: light;
+  --canvas: #f5f3ee;
+  --surface: #fcfaf7;
+  --surface-subtle: #f7f5f0;
+  --surface-muted: #eae9e4;
+  --border: #d5d4cd;
+  --border-soft: #e7e5df;
+  --ink-strong: #101225;
+  --ink: #252637;
+  --ink-secondary: #5e6070;
+  --ink-muted: #7b7d8a;
+  --accent: #5145ff;
+  --accent-soft: #eeebff;
+  --accent-ink: #201878;
+  --success: #27835b;
+  --success-soft: #ddf1e5;
+  --warning: #996315;
+  --warning-soft: #faebd2;
+  --danger: #b04740;
+  --danger-soft: #f8e0de;
+  --info: #346893;
+  --info-soft: #e2edf8;
+  --diff-add-bg: #e4f4e8;
+  --diff-add-ink: #217245;
+  --diff-remove-bg: #fce8e6;
+  --diff-remove-ink: #b04740;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-code: 'Geist Mono', ui-monospace, monospace;
+}
+
+/* Tailwind v4 theme exposes the PDF palette as utilities, without a second palette. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-elevated: var(--surface-subtle);
+  --color-neutral: var(--surface-muted);
+  --color-selection: var(--accent-soft);
+  --color-line: var(--border-soft);
+  --color-control: var(--border);
+  --color-chalk: var(--ink-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-secondary);
+  --color-metadata: var(--ink-muted);
+  --color-primary: var(--accent);
+  --color-primary-hover: var(--accent-ink);
+  --color-success: var(--success);
+  --color-success-surface: var(--success-soft);
+  --color-attention: var(--warning);
+  --color-attention-surface: var(--warning-soft);
+  --color-error: var(--danger);
+  --color-error-surface: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-surface: var(--info-soft);
+  --color-diff-add: var(--diff-add-bg);
+  --color-diff-add-ink: var(--diff-add-ink);
+  --color-diff-remove: var(--diff-remove-bg);
+  --color-diff-remove-ink: var(--diff-remove-ink);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
+}
+
+@theme {
+  --radius-control: 8px;
+  --radius-panel: 10px;
+  --radius-popover: 12px;
+  --radius-frame: 18px;
+  --shadow-popover: 0 12px 36px rgb(25 28 20 / 10%);
+  --shadow-frame: 0 8px 28px #23252220;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    background: var(--surface-muted);
+    font-family: var(--font-ui);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@keyframes mascot-blink {
+  0%, 42%, 46%, 74%, 78%, 100% { transform: scaleY(1); }
+  44%, 76% { transform: scaleY(0.15); }
+}
+@keyframes mascot-glance {
+  0%, 18%, 43%, 68%, 100% { transform: translateX(0); }
+  24%, 36% { transform: translateX(1px); }
+  75%, 88% { transform: translateX(-1px); }
+}

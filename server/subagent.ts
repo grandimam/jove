@@ -14,7 +14,7 @@ export async function callImplementationSubagent(config:Config,run:Run,attempt:S
  onActivity(`Subagent ${attempt.id} started with a fresh implementation context.`);
  if(run.model==='demo')return callDemoSubagent(config,root,signal,onActivity,onTests);
  return piChat({...config,allowTestExecution:run.handoff.allowTestExecution===true},run.model,root,
-  JSON.stringify({role:'implementation_subagent',subagentId:attempt.id,parentInvestigationId:run.investigationId,approvedHandoff:run.handoff,followup:run.instruction||'',previousAttempts:(run.attempts||[]).filter(a=>a.id!==attempt.id).map(a=>({status:a.status,summary:a.summary})),preserveExistingChanges:true}),
+  JSON.stringify({role:'implementation_subagent',subagentId:attempt.id,parentInvestigationId:run.investigationId,approvedHandoff:run.handoff,approvedCandidateRevision:run.candidateRevision,followup:run.instruction||'',previousAttempts:(run.attempts||[]).filter(a=>a.id!==attempt.id).map(a=>({status:a.status,summary:a.summary})),preserveExistingChanges:true}),
   [],true,onActivity,signal,onTests);
 }
 

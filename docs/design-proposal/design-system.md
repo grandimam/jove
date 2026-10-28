@@ -1,6 +1,6 @@
 # Jove — Graphite & Chalk design system
 
-Status: Graphite & Chalk is implemented in the app with Tailwind CSS. This supersedes the rejected light blue and sand-accented concepts. The specimen uses illustrative content. Preserve the existing AgentMark geometry, rendered in chalk; the image is not a replacement logo asset.
+Status: Historical proposal, superseded by the [Paper specification](../paper-design-system.md). The live implementation uses `src/design-system/paper.css` for tokens/base rules and `src/design-system/paper.ts` for Tailwind component recipes. References below to Graphite implementation files describe the former design, not current production imports. The specimen uses illustrative content.
 
 ![Proposed design system](design-system-graphite.png)
 

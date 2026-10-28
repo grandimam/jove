@@ -24,7 +24,7 @@ for(const [scenario,message] of [['error','Authentication expired'],['exit','exi
 });
 test('Pi cancellation closes the process and preserves the caller abort',async()=>{
  const t=setup('hang');const controller=new AbortController();
- try{const promise=piChat(t.config,model,t.root,'Inspect',[],false,()=>{controller.abort();},controller.signal);await assert.rejects(promise,/interrupt|abort|closed/i);}finally{t.close();}
+ try{const promise=piChat(t.config,model,t.root,'Inspect',[],false,()=>{},controller.signal);const timer=setTimeout(()=>controller.abort(),100);promise.finally(()=>clearTimeout(timer)).catch(()=>{});await assert.rejects(promise,/interrupt|abort|closed/i);}finally{t.close();}
 });
 test('Pi timeout stops a stalled run',async()=>{
  const t=setup('hang');try{await assert.rejects(piChat({...t.config,piTimeoutMs:200},model,t.root,'Inspect',[],false,()=>{},new AbortController().signal),/time limit/);}finally{t.close();}

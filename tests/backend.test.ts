@@ -64,7 +64,17 @@ test('normal startup has no static projects and imports canonical local codebase
   const listing=await (await fetch(base+'/directories?path='+encodeURIComponent(root))).json() as any;assert.ok(listing.directories.some((d:any)=>d.name==='my-code'&&d.isRepository));
   const request=()=>fetch(base+'/projects',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({path:path.join(repo,'src')})});
   const imported=await request();assert.equal(imported.status,201);const project=await imported.json() as any;assert.equal(project.name,'my-code');assert.equal(project.path,fs.realpathSync(repo));assert.equal(project.isDemo,false);
+  assert.equal(project.work.title,'Primary work');assert.equal(project.work.isPrimary,true);
+  assert.equal(project.work.projectId,project.id);assert.notEqual(project.work.path,project.path);
+  assert.equal(project.investigation.workId,project.work.id);assert.equal(project.investigation.isMain,true);
+  const saved=JSON.parse(fs.readFileSync(path.join(root,'state.json'),'utf8'));
+  assert.equal(saved.works[0].id,project.work.id);assert.equal(saved.works[0].isPrimary,true);
+  assert.equal(saved.investigations[0].id,project.investigation.id);
   assert.equal((await request()).status,400);
+  assert.equal(instance.state.works.length,1);assert.equal(instance.state.investigations.length,1);
+  const emptyRepo=path.join(root,'empty');fs.mkdirSync(emptyRepo);git(emptyRepo,'init');
+  const failed=await fetch(base+'/projects',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({path:emptyRepo})});
+  assert.equal(failed.status,400);assert.equal(instance.state.projects.length,1);assert.equal(instance.state.works.length,1);
  }finally{instance.close();await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(root,{recursive:true,force:true});}
 });
 
@@ -123,5 +133,35 @@ test('completed run review is stable when subsequent worktree edits arrive',asyn
   await until(()=>s.runs[0].status==='completed');const before=(await t.api(`/runs/${run.id}/diff`)).body;
   fs.writeFileSync(path.join(s.works[0].path,'later.txt'),'Later task change');
   const after=(await t.api(`/runs/${run.id}/diff`)).body;assert.deepEqual(after,before);assert.match(after.scope,/Cumulative/);assert.equal(after.snapshot,true);
+ }finally{await t.stop();}
+});
+
+test('inline terminal runs in the work directory, resizes, accepts input and closes',async()=>{
+ const t=await setup();try{
+  const work=t.instance.state.works[0];
+  const opened=await t.api(`/works/${work.id}/terminal`,{});assert.equal(opened.status,200);
+  const session=opened.body.id;assert.ok(session);
+  assert.equal((await t.api(`/works/${work.id}/terminal/resize`,{session,cols:100,rows:30})).status,200);
+  const marker=path.join(work.path,'terminal-check.txt');
+  assert.equal((await t.api(`/works/${work.id}/terminal/input`,{session,data:"printf 'inline-terminal-ok' > terminal-check.txt\r"})).status,200);
+  await until(()=>fs.existsSync(marker));assert.equal(fs.readFileSync(marker,'utf8'),'inline-terminal-ok');
+  assert.equal((await t.api(`/works/${work.id}/terminal/input`,{session:'invalid',data:'pwd\r'})).status,400);
+  assert.equal((await t.api(`/works/${work.id}/terminal`,{},'DELETE')).status,200);
+  assert.equal((await t.api(`/works/${work.id}/terminal/input`,{session,data:'pwd\r'})).status,400);
+ }finally{await t.stop();}
+});
+
+test('new tabs inherit only the model and closing tabs preserves history',async()=>{
+ const t=await setup();try{
+  const general=t.instance.state.investigations.find(i=>i.isMain)!;
+  const sourceCount=t.instance.state.messages.filter(m=>m.investigationId===general.id).length;
+  const created=await t.api('/investigations',{workId:general.workId,title:'New tab'});assert.equal(created.status,201);assert.equal(created.body.model,general.model);
+  assert.equal(t.instance.state.messages.filter(m=>m.investigationId===created.body.id).length,0);
+  assert.equal(t.instance.state.candidates.filter(c=>c.investigationId===created.body.id).length,0);
+  const removed=await t.api(`/investigations/${general.id}`,{},'DELETE');assert.equal(removed.status,200);
+  assert.equal(t.instance.state.messages.filter(m=>m.investigationId===general.id).length,sourceCount);
+  assert.equal((await t.api('/state')).body.investigations.some((i:any)=>i.id===general.id),false);
+  for(const inv of (await t.api('/state')).body.investigations)await t.api(`/investigations/${inv.id}`,{},'DELETE');
+  const tabs=(await t.api('/state')).body.investigations;assert.equal(tabs.length,1);assert.equal(tabs[0].title,'General');assert.equal(tabs[0].isMain,true);
  }finally{await t.stop();}
 });

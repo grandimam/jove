@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. The API runs on port 4318. The workspace starts empty. Import your local Git codebases to begin.
+Open **http://127.0.0.1:5173**. The API runs on port 4318. The workspace starts empty. Import your local Git codebases to begin. Each import opens a new Primary work item with its General tab.
 
 For a production build:
 
@@ -30,7 +30,7 @@ A project represents an existing local Git repository. Choose **Import project**
 
 ### Work in the console
 
-1. Choose **Import project**, browse to a Git repository, and import it. Create a work item for your question or change.
+1. Choose **Import project**, browse to a Git repository, and import it. Its Primary work and General tab open automatically; create additional work items for separate questions or changes.
 2. Ask Pi from the console prompt. Output streams into selectable blocks; tool activity appears alongside it. Enter submits; Shift+Enter adds a line; Up recalls your last prompt when the input is empty.
 3. Use **Clip** beneath an output block, or select a passage and choose **Clip selection**. Send it to an existing investigation or open a new one beside the original.
 4. **Merge** selected findings back into another investigation. Attributed clips remain inline and are included in subsequent Pi context.
@@ -46,7 +46,9 @@ Install and authenticate Pi before starting Jove. Tested against the installed P
 
 Jove explicitly loads the installed `@router-for-me/pi-cliproxyapi-provider` provider from Pi’s global npm directory. CLIProxyAPI models are preferred, with GPT 6.1 Sol selected when available. OpenRouter models are excluded from Jove’s selector. The provider owns proxy credentials and transport.
 
-Open **Settings** to inspect available models or refresh after changing your Pi login. Choose a model in each console or separately in the implementation handoff.
+Choose a model from the picker below the message field. New tabs inherit the General tab’s model and start with an empty conversation. Close tabs with their × control; their saved messages remain on disk.
+
+**Terminal**, beside **Diff** and **History**, opens an interactive shell inside the right pane in the active work’s directory. It stays alive while switching views and reconnects to the same work session. Disconnected sessions expire after 15 minutes; stopping Jove closes all terminal sessions.
 
 Optional server settings:
 
@@ -107,7 +109,7 @@ Tests cover real Git isolation, persistence/restart, clipping/provenance, contex
 
 ## Architecture
 
-- React + TypeScript + Vite UI; responsive dark workspace inspired by the supplied references.
+- React + TypeScript + Vite UI; responsive Paper workspace using Tailwind CSS v4.
 - Express + Node.js local API.
 - Atomic JSON state store, Git CLI worktree isolation.
 - Pi RPC harness with a 32-turn limit, cancellation, deadlines, model discovery, and streamed output.
@@ -124,4 +126,14 @@ Read-only tools and scoped writes are application-level checks, not OS-level iso
 
 ## Interface styling
 
-Jove uses the Graphite & Chalk design system with Tailwind CSS v4. Semantic colors and font families are defined in `src/design-system/graphite.css`; shared utility recipes are in `src/design-system/graphite.ts`. Inter and IBM Plex Mono are bundled locally. The legacy application and polish stylesheets have been removed.
+Jove uses the [Paper design system](docs/paper-design-system.md) with Tailwind CSS v4. `src/design-system/paper.css` contains only the Tailwind import, PDF color/font/geometry tokens, and global base/accessibility rules. Component styling, state variants, and responsive layouts are Tailwind utilities in `src/design-system/paper.ts` and JSX—not CSS overrides. Geist and Geist Mono are bundled locally.
+
+Use `paper('component-name')` for shared recipes; ordinary Tailwind utilities can be used directly in JSX. Semantic class names remain as DOM/state hooks, not stylesheet selectors. The former Graphite stylesheet and recipes have been removed. See [implementation scope](docs/paper-implementation.md) for remaining product/design gaps.
+
+With Vite running, validate illustrative desktop/mobile UI records without changing your workspace:
+
+```sh
+JOVE_UI_URL=http://127.0.0.1:5173 node --import tsx scripts/check-paper-ui.ts
+```
+
+Install Playwright Chromium first (`npx playwright install chromium`), or supply `PLAYWRIGHT_EXECUTABLE_PATH`. Screenshots default to `/tmp/jove-paper-ui`; override with `JOVE_SCREENSHOTS`.
