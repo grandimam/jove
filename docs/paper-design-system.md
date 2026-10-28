@@ -7,7 +7,7 @@
 **Visual theme:** Paper (light)  
 **Primary users:** Software engineers
 
-> This document is the implementation source of truth. The generated mockup is a visual concept, **not** an exact rendering of fonts, icons, code changes, or application state.
+> Original Paper design baseline. The current interface has evolved; use the [README](../README.md) for current workflows and screenshots, and [component recipes](../src/design-system/paper.ts) for implemented styles.
 
 ---
 
@@ -79,38 +79,38 @@ The product is predominantly warm neutral. Lilac is for interaction emphasis; mi
 
 ### 3.1 Foundations
 
-| Token | Hex | Usage |
-|---|---|---|
-| `--canvas` | `#F4F3EF` | Primary application background |
-| `--surface` | `#FFFFFF` | Chat, editor, output surfaces |
-| `--surface-subtle` | `#F8F7F3` | Controls, subdued backgrounds |
-| `--surface-muted` | `#EAE9E4` | Sidebar, selected neutral areas |
-| `--border` | `#D5D4CD` | Panel and control borders |
-| `--border-soft` | `#E7E5DF` | Lightweight dividers |
-| `--ink-strong` | `#232522` | Main text, primary controls |
-| `--ink` | `#40443F` | Ordinary labels and body |
-| `--ink-secondary` | `#62645E` | Secondary content |
-| `--ink-muted` | `#777A72` | Metadata and placeholders |
+| Token              | Hex       | Usage                           |
+| ------------------ | --------- | ------------------------------- |
+| `--canvas`         | `#F4F3EF` | Primary application background  |
+| `--surface`        | `#FFFFFF` | Chat, editor, output surfaces   |
+| `--surface-subtle` | `#F8F7F3` | Controls, subdued backgrounds   |
+| `--surface-muted`  | `#EAE9E4` | Sidebar, selected neutral areas |
+| `--border`         | `#D5D4CD` | Panel and control borders       |
+| `--border-soft`    | `#E7E5DF` | Lightweight dividers            |
+| `--ink-strong`     | `#232522` | Main text, primary controls     |
+| `--ink`            | `#40443F` | Ordinary labels and body        |
+| `--ink-secondary`  | `#62645E` | Secondary content               |
+| `--ink-muted`      | `#777A72` | Metadata and placeholders       |
 
 ### 3.2 Interaction and semantic colors
 
-| Token | Hex | Usage |
-|---|---|---|
-| `--accent` | `#635BFF` | Focus ring, selected indication, links used sparingly |
-| `--accent-soft` | `#E8E6FA` | Selected tabs, user chat tint |
-| `--accent-ink` | `#4840A0` | Text over lilac surfaces |
-| `--success` | `#27835B` | Verified success |
-| `--success-soft` | `#DDF1E5` | Passed-test backgrounds |
-| `--warning` | `#996315` | Conflicts, pending human decisions |
-| `--warning-soft` | `#FAEBD2` | Warning surfaces |
-| `--danger` | `#B04740` | Failures and destructive states |
-| `--danger-soft` | `#F8E0DE` | Diff removals, error backgrounds |
-| `--info` | `#346893` | Informational/file references |
-| `--info-soft` | `#E2EDF8` | Inspection/tool activity |
-| `--diff-add-bg` | `#E4F4E8` | Added code lines |
-| `--diff-add-ink` | `#217245` | Added code text/markers |
-| `--diff-remove-bg` | `#FCE8E6` | Removed code lines |
-| `--diff-remove-ink` | `#B04740` | Removed code text/markers |
+| Token               | Hex       | Usage                                                 |
+| ------------------- | --------- | ----------------------------------------------------- |
+| `--accent`          | `#635BFF` | Focus ring, selected indication, links used sparingly |
+| `--accent-soft`     | `#E8E6FA` | Selected tabs, user chat tint                         |
+| `--accent-ink`      | `#4840A0` | Text over lilac surfaces                              |
+| `--success`         | `#27835B` | Verified success                                      |
+| `--success-soft`    | `#DDF1E5` | Passed-test backgrounds                               |
+| `--warning`         | `#996315` | Conflicts, pending human decisions                    |
+| `--warning-soft`    | `#FAEBD2` | Warning surfaces                                      |
+| `--danger`          | `#B04740` | Failures and destructive states                       |
+| `--danger-soft`     | `#F8E0DE` | Diff removals, error backgrounds                      |
+| `--info`            | `#346893` | Informational/file references                         |
+| `--info-soft`       | `#E2EDF8` | Inspection/tool activity                              |
+| `--diff-add-bg`     | `#E4F4E8` | Added code lines                                      |
+| `--diff-add-ink`    | `#217245` | Added code text/markers                               |
+| `--diff-remove-bg`  | `#FCE8E6` | Removed code lines                                    |
+| `--diff-remove-ink` | `#B04740` | Removed code text/markers                             |
 
 **Use contrast-tested variants where needed to meet WCAG AA.** Status meaning must never be represented by hue alone; combine icon, label and/or textual state.
 
@@ -132,19 +132,19 @@ The product is predominantly warm neutral. Lilac is for interaction emphasis; mi
 **Code:** Geist Mono (regular, medium).  
 Use real licensed/open-source distributable packages in the app; do not rely on a generated image's font approximation.
 
-| Role | Family | Size | Weight | Line height |
-|---|---|---:|---:|---:|
-| Logo wordmark | Geist | 26px | 600 | 30px |
-| Work title | Geist | 20px | 600 | 28px |
-| Screen heading | Geist | 18px | 600 | 26px |
-| Panel title | Geist | 14px | 600 | 20px |
-| Navigation | Geist | 13px | 500 | 20px |
-| Investigation text | Geist | 14px | 400 | 23px |
-| Buttons/labels | Geist | 13px | 500 | 18px |
-| Secondary text | Geist | 12px | 400 | 18px |
-| Metadata | Geist | 11px | 400 | 16px |
-| Code/diff | Geist Mono | 13px | 400 | 20px |
-| Terminal | Geist Mono | 12px | 400 | 19px |
+| Role               | Family     | Size | Weight | Line height |
+| ------------------ | ---------- | ---: | -----: | ----------: |
+| Logo wordmark      | Geist      | 26px |    600 |        30px |
+| Work title         | Geist      | 20px |    600 |        28px |
+| Screen heading     | Geist      | 18px |    600 |        26px |
+| Panel title        | Geist      | 14px |    600 |        20px |
+| Navigation         | Geist      | 13px |    500 |        20px |
+| Investigation text | Geist      | 14px |    400 |        23px |
+| Buttons/labels     | Geist      | 13px |    500 |        18px |
+| Secondary text     | Geist      | 12px |    400 |        18px |
+| Metadata           | Geist      | 11px |    400 |        16px |
+| Code/diff          | Geist Mono | 13px |    400 |        20px |
+| Terminal           | Geist Mono | 12px |    400 |        19px |
 
 Rules:
 
@@ -163,26 +163,26 @@ Rules:
 **Compact:** 14 px. **Toolbar:** 18 px.  
 Brand raven is a **custom asset** and is never substituted with the generic Lucide Bird icon in production.
 
-| Concept | Icon key | Notes |
-|---|---|---|
-| Projects category | `blocks` | The concept of a software system |
-| Individual project | Custom monogram or neutral `blocks` | Uniform treatment; no random colors |
-| Work | `layers-3` | All Work rows use the same icon |
-| Investigation | `scan-search` | Consistent across tabs |
-| Fork | `git-fork` | Start a new investigation from selected context |
-| Clip | `corner-up-right` | Transfer finding to another investigation |
-| Output | `file-text` | Investigation artifact |
-| Consolidate | `git-compare-arrows` | Only as contextual action, not global nav |
-| Implement | `play` | Label must accompany icon |
-| Attempt history | `history` | Work-level history |
-| Diff | `file-diff` | Proposed vs actual clearly labeled |
-| Test candidate | `flask-conical` | Experimental run |
-| Terminal | `terminal` | Execution output |
-| Pause | `pause` | Stop at safe boundary |
-| Search | `search` | Global command search |
-| Settings | `settings-2` | In account popover |
-| File | `file-code-2` | Generic code asset |
-| Expand / collapse | `chevron-down`, `chevron-right` | Standard disclosure |
+| Concept            | Icon key                            | Notes                                           |
+| ------------------ | ----------------------------------- | ----------------------------------------------- |
+| Projects category  | `blocks`                            | The concept of a software system                |
+| Individual project | Custom monogram or neutral `blocks` | Uniform treatment; no random colors             |
+| Work               | `layers-3`                          | All Work rows use the same icon                 |
+| Investigation      | `scan-search`                       | Consistent across tabs                          |
+| Fork               | `git-fork`                          | Start a new investigation from selected context |
+| Clip               | `corner-up-right`                   | Transfer finding to another investigation       |
+| Output             | `file-text`                         | Investigation artifact                          |
+| Consolidate        | `git-compare-arrows`                | Only as contextual action, not global nav       |
+| Implement          | `play`                              | Label must accompany icon                       |
+| Attempt history    | `history`                           | Work-level history                              |
+| Diff               | `file-diff`                         | Proposed vs actual clearly labeled              |
+| Test candidate     | `flask-conical`                     | Experimental run                                |
+| Terminal           | `terminal`                          | Execution output                                |
+| Pause              | `pause`                             | Stop at safe boundary                           |
+| Search             | `search`                            | Global command search                           |
+| Settings           | `settings-2`                        | In account popover                              |
+| File               | `file-code-2`                       | Generic code asset                              |
+| Expand / collapse  | `chevron-down`, `chevron-right`     | Standard disclosure                             |
 
 Avoid emoji, inconsistent filled icons, decorative icon badges, and mixing icon families on the same surface. File-type colors may be introduced only if they add actual recognition value and remain restrained.
 
@@ -192,15 +192,15 @@ Avoid emoji, inconsistent filled icons, decorative icon badges, and mixing icon 
 
 ### Spacing scale
 
-| Token | Value |
-|---|---:|
-| `space-1` | 4px |
-| `space-2` | 8px |
-| `space-3` | 12px |
-| `space-4` | 16px |
-| `space-5` | 20px |
-| `space-6` | 24px |
-| `space-8` | 32px |
+| Token     | Value |
+| --------- | ----: |
+| `space-1` |   4px |
+| `space-2` |   8px |
+| `space-3` |  12px |
+| `space-4` |  16px |
+| `space-5` |  20px |
+| `space-6` |  24px |
+| `space-8` |  32px |
 
 ### Geometry
 
@@ -427,8 +427,8 @@ This is a distinct **integration** operation, not output consolidation. It must 
   --diff-add-ink: #217245;
   --diff-remove-bg: #fce8e6;
   --diff-remove-ink: #b04740;
-  --font-ui: "Geist", system-ui, sans-serif;
-  --font-code: "Geist Mono", ui-monospace, monospace;
+  --font-ui: 'Geist', system-ui, sans-serif;
+  --font-code: 'Geist Mono', ui-monospace, monospace;
   --radius-control: 8px;
   --radius-panel: 10px;
   --shadow-popover: 0 12px 36px rgb(25 28 20 / 10%);

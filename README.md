@@ -1,139 +1,185 @@
-# Jove
+<p align="center">
+  <img src="docs/jove-assets/mascot-color.svg" alt="Jove" width="160" height="160">
+</p>
 
-**Investigate freely. Merge what matters. Implement when ready.**
+<p align="center">
+  <strong>Understand the code. Follow a tangent. Turn the answer into a task.</strong><br>
+  Jove is a local development workspace for exploring your repository with AI,<br>
+  carrying useful context into new conversations, and reviewing the changes you choose to make.
+</p>
 
-A local-first development workspace built around **Project → Work → Investigations**. Explore a codebase in separate conversations, clip useful context, merge attributed findings, and approve an implementation from any investigation.
+<p align="center">
+  <a href="#get-started">Get started</a> ·
+  <a href="#one-question-can-go-places">See the flow</a> ·
+  <a href="#how-jove-works">How it works</a> ·
+  <a href="#development">Development</a>
+</p>
 
-## Run
+---
 
-Requires **Node.js 22+**, npm, and Git on your PATH.
+## Your code has a story. Follow it.
+
+Start with “How does this work?” Keep asking until the next change is clear.
+
+Jove gives each thread its own tab. When something deserves a closer look, **clip a sentence, a code block, or an entire message**. A new tab opens with exactly that context and a link back to its source. Your original conversation stays where you left it.
+
+When you're ready to act, **add a task in one click**. Edit its objective inline, start it when you choose, and review the resulting changes in the same workspace.
+
+![Jove's workspace with conversation tabs, violet markdown headings, dark code blocks, and an inline changes pane](docs/jove-assets/workspace.png)
+
+_The current interface: your conversations in the center; Diff, History, and Terminal within reach._
+
+## One question can go places
+
+| You want to…                        | Jove gives you…                                                                                            |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Understand an unfamiliar repository | Read-only investigation with streamed answers and inspectable source references.                           |
+| Follow a promising tangent          | One-click clips that open a new conversation with selected context.                                        |
+| Try another model                   | A model picker per tab. Ordinary new tabs inherit General's model; clips inherit their source tab's model. |
+| Turn an answer into a change        | A task with the conversation's context and model, plus inline **Edit**, **Start**, and **Remove**.         |
+| See what actually changed           | Recorded diffs, task details, verification results when available, and an inline terminal.                 |
+| Pick up later                       | Conversations, context, and task state saved locally.                                                      |
+
+### Clip → new tab → next question
+
+1. **Select text** to reveal the small Clip/Copy toolbar, use **Clip** on a code block, or clip a whole user or assistant message.
+2. Jove opens a new tab with the selection labeled **Context**. Code keeps its formatting and language.
+3. The message box is focused. Ask your next question.
+
+No destination form. No copied conversation history to sort through.
+
+![A new Jove tab containing a clipped code block labeled Context, a From General source link, and an empty message box](docs/jove-assets/clip-context.png)
+
+_Just the useful bit, with its origin attached._
+
+### Queue it. Start when ready.
+
+**Add to queue** creates a task immediately. It doesn't start writing code.
+
+The task appears in the conversation and in the sidebar. Adjust its objective with **Edit**, choose **Start**, or **Remove** it before it runs. Each implementation attempt receives its own handoff and runs in a separate subagent process. Only one implementation can write to a worktree at a time.
+
+Finished tasks return to the conversation with a **Review** action. Pause or interrupt active work; resume with the existing files preserved.
+
+## Get started
+
+You need **Node.js 22+**, **npm**, **Git**, and an installed, authenticated **Pi** for live AI conversations.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. The API runs on port 4318. The workspace starts empty. Import your local Git codebases to begin. Each import opens a new Primary work item with its General tab.
+Open **http://127.0.0.1:5173**.
 
-For a production build:
+1. Click **Import project** and choose a local Git repository.
+2. Jove opens its primary workspace and **General** tab automatically.
+3. Choose an available model below the message box and ask your first question.
+
+Try:
+
+> Trace how a request reaches the database. Show the files involved and where validation happens.
+
+Jove prepares an isolated Git working copy from the repository's HEAD. Uncommitted changes in your original checkout stay there; they aren't copied into the new workspace.
+
+<details>
+<summary><strong>Run the built app or try the local demo</strong></summary>
 
 ```sh
 npm run build
 npm start
 ```
 
-Open **http://127.0.0.1:4318**. The local server serves the compiled application. Do not expose it to your network or the public internet; it is a single-user desktop-local application, not an authenticated hosted service.
+Open **http://127.0.0.1:4318**. This serves the built interface and API together.
 
-### Open your codebase
+To explore the bundled deterministic example without a live model:
 
-A project represents an existing local Git repository. Choose **Import project**, browse to the repository, and select **Import codebase**. Jove derives the project name from the repository folder, shows the canonical path, and prevents opening the same repository twice. Each work item has an isolated Git working copy. Existing example data is hidden in normal use. Set `JOVE_DEMO=1` only when you want the bundled demonstration.
+```sh
+JOVE_DEMO=1 npm run dev
+```
 
-### Work in the console
+The demo analyzes and edits a fixed example repository. It demonstrates the workflow; it doesn't answer arbitrary questions.
 
-1. Choose **Import project**, browse to a Git repository, and import it. Its Primary work and General tab open automatically; create additional work items for separate questions or changes.
-2. Ask Pi from the console prompt. Output streams into selectable blocks; tool activity appears alongside it. Enter submits; Shift+Enter adds a line; Up recalls your last prompt when the input is empty.
-3. Use **Clip** beneath an output block, or select a passage and choose **Clip selection**. Send it to an existing investigation or open a new one beside the original.
-4. **Merge** selected findings back into another investigation. Attributed clips remain inline and are included in subsequent Pi context.
-5. Choose **Add to queue**, review the handoff, and approve it. Inline actions queue the selected passage or that output block; the investigation toolbar includes recent findings. The queue is a single list with each task’s status and a start, pause, resume, or review button. Click a task title to inspect changes, activity, verification, and its summary.
+</details>
 
-Every implementation starts a separate subagent with its own handoff and context. Results return inline to the source investigation with a link to the run. Resuming creates a new subagent attempt while preserving existing files. One implementation can write to each worktree at a time. Completed runs retain a stable snapshot of the cumulative worktree diff at that point; it is not a per-task patch.
+## Bring your model through Pi
 
-The console is a Jove interface backed by the Pi harness, not a shell or a screen recording of Pi’s TUI. Output remains ordinary selectable text, enabling inline clips and source links.
+Jove uses Pi's RPC interface and existing authentication. Configure and authenticate Pi first; Jove discovers its available models. There is no separate API-key form in Jove.
 
-## Pi and CLIProxyAPI
-
-Install and authenticate Pi before starting Jove. Tested against the installed Pi 0.80.6. Jove launches `pi --mode rpc`, discovers available models, and uses Pi’s existing authentication. It has no direct Chat Completions adapter or browser API-key setup.
-
-Jove explicitly loads the installed `@router-for-me/pi-cliproxyapi-provider` provider from Pi’s global npm directory. CLIProxyAPI models are preferred, with GPT 6.1 Sol selected when available. OpenRouter models are excluded from Jove’s selector. The provider owns proxy credentials and transport.
-
-Choose a model from the picker below the message field. New tabs inherit the General tab’s model and start with an empty conversation. Close tabs with their × control; their saved messages remain on disk.
-
-**Terminal**, beside **Diff** and **History**, opens an interactive shell inside the right pane in the active work’s directory. It stays alive while switching views and reconnects to the same work session. Disconnected sessions expire after 15 minutes; stopping Jove closes all terminal sessions.
-
-Optional server settings:
+The current integration detects the installed <code>@router-for-me/pi-cliproxyapi-provider</code> extension, prefers CLIProxyAPI models, and excludes OpenRouter from the picker. Override the executable or extension path when needed:
 
 ```sh
 export JOVE_PI_COMMAND='/absolute/path/to/pi'
-# Override automatic provider-extension detection if installed elsewhere:
 export JOVE_PI_PROVIDER_EXTENSION='/path/to/pi-cliproxyapi-provider/extensions/index.ts'
-# Optional verification command, as JSON argv:
-export JOVE_TEST_COMMAND='["npm","test"]'
 npm run dev
 ```
 
-Each request starts a fresh Pi process with the investigation history and attributed clips. Jove owns durable conversation records. Pi runs the model/tool loop, retries, and streaming. Jove waits for `agent_settled`, rather than treating prompt acceptance as completion. Stop/pause/interrupt cancels the corresponding Pi process.
+If no model is available, check Pi's installation and authentication. The included demo remains available for trying the interface.
 
-Pi receives Jove’s scoped repository tools through an explicit extension. Investigations can list, read, and search files. Approved implementations can additionally write files and invoke the configured verification command. Unrelated Pi extensions, skills, templates, and built-in shell tools are not loaded.
+## How Jove works
 
-**Privacy:** Pi sends the supplied context and requested source excerpts through the selected model provider. Credentials remain with Pi. Common secret paths are excluded; secrets embedded in ordinary source are not automatically recognizable.
+**A local workspace, backed by Pi.** Jove owns the interface, durable conversations, context, task queue, and Git working copies. Pi runs the model/tool loop in fresh processes. Conversation requests include recent history and attributed context.
 
-**Verification approval:** Tests run only when explicitly approved in the handoff. They execute local repository code with the server user’s OS permissions; a Git worktree is not an OS sandbox. Missing configuration or approval is reported as not run.
+**Investigation before implementation.** Conversation tools can list, read, and search repository files. Implementation tasks additionally get scoped file-writing tools. Security, Testing, and Architecture specialists can be invoked for matching conversation requests.
 
-## What is implemented
+**Everything close at hand.** The right pane holds Diff, History, and an interactive Terminal in the active workspace directory. The terminal stays inline and reconnects while you switch views.
 
-- Persistent projects, work, investigations, messages, handoffs, and run state.
-- Automatic branch/working-copy creation for each work item, based on repository HEAD. Existing uncommitted changes in the original checkout are left untouched and are not copied into new work.
-- Read-only investigation tool set: list, read, literal search. No model shell tool.
-- Model selection per investigation and separately for implementation. Switching models never rewrites past messages.
-- Whole-message or selected-text clipping, new/existing destination, source attribution.
-- Side-by-side investigations, renaming, search, and compact model controls.
-- Selective context merge into any investigation in the same work, with source-message references and confidence caveats.
-- Editable approved handoff, compact implementation queue, direct start/pause/resume controls, scoped writes, diff/tests/activity/summary, interruption/resumption.
-- Separate subagent processes for every implementation attempt, with results attributed back to the source investigation.
-- One writer per work, including stopping operations; one server per data directory.
-- File-content freshness fingerprints and stale-evidence warnings after edits.
-- Before-write recovery copies for live overwrites, plus read-before-write conflict checks.
-- Safe archive that preserves all files. Advanced details reveal branch, path, revision, and recovery checkpoints.
-- Local-origin/Host restrictions, JSON-only mutations, path traversal/symlink rejection, and common secret-file exclusions.
+**You keep the last word.** Jove doesn't automatically merge, push, or deploy your changes. A completed task's diff is a snapshot of cumulative worktree changes, so it can include earlier tasks.
 
-## Storage and recovery
+<details>
+<summary><strong>Local storage, recovery, and boundaries</strong></summary>
 
-By default, data lives in **~/.jove**. Override with `JOVE_DATA_DIR=/absolute/path`.
+Data lives in <code>~/.jove</code> by default. Set <code>JOVE_DATA_DIR</code> to use another directory.
 
-- `state.json`: atomic persistent records, including conversations.
-- `workspaces/`: managed isolated Git working copies.
-- `checkpoints/`: original file contents saved before Pi implementation overwrites. Find the exact paths in **Work details**. Restore manually after reviewing the diff; there is no automatic destructive restore.
-- `server.lock`: excludes a second Jove server using the same data directory. A stale lock is recovered only when its recorded process is no longer alive.
+| Location     | What it contains                                               |
+| ------------ | -------------------------------------------------------------- |
+| state.json   | Persistent conversations, context, projects, and task records. |
+| workspaces/  | Isolated Git working copies.                                   |
+| checkpoints/ | Before-write recovery copies for live file overwrites.         |
+| server.lock  | Ownership lock for the data directory.                         |
 
-A restart marks running and paused runs interrupted, preserves edits, and requires explicit resume for those attempts. Waiting tasks keep their order. If a run was active at restart, the queue switches to manual mode. Failure or interruption also disables automatic starting so later work does not silently continue over an unfinished task. Start an individual waiting task with its play button when the worktree is available. Archive never deletes a branch or working copy. No merge, push, cleanup, or deployment happens automatically.
+Closing tabs preserves their saved history. Removing a project preserves its files and saved work. Restarting during an implementation preserves the files and requires explicitly resuming that interrupted attempt.
 
-## Checks
+Jove is a single-user local application. Its server binds to loopback; it isn't an authenticated hosted service.
+
+**Local storage does not mean local inference.** Pi sends supplied context and requested source excerpts to your selected provider. Credentials stay with Pi. Common secret-file paths are excluded, but secrets embedded in ordinary source may still be included.
+
+Git isolation and scoped tools are application-level protections, not an OS sandbox. The inline terminal runs with your local permissions.
+
+Verification requires a configured command and explicit execution approval. The one-click queue does not grant that approval; don't treat an unrun test as a passing test. A verification command can be configured as JSON argv:
 
 ```sh
-npm test
-npm run typecheck
-npm run build
+export JOVE_TEST_COMMAND='["npm","test"]'
 ```
 
-Tests cover real Git isolation, persistence/restart, clipping/provenance, context merge, child implementation, true regression test execution, writer exclusion, pause/resume, archival, secret filtering, symlink/path protections, process locking, Pi tool permission boundaries, JSONL protocol fixtures, and frontend workflow interactions against the real local API.
+Windows installation, large-repository performance, and every proxy model still need broader verification. See the [verification record](docs/VERIFICATION.md) for scope and limitations.
 
-## Architecture
+</details>
 
-- React + TypeScript + Vite UI; responsive Paper workspace using Tailwind CSS v4.
-- Express + Node.js local API.
-- Atomic JSON state store, Git CLI worktree isolation.
-- Pi RPC harness with a 32-turn limit, cancellation, deadlines, model discovery, and streamed output.
-- Node test runner with real temporary Git repositories and mock Pi RPC subprocess fixtures.
-- React Testing Library + JSDOM for UI workflows.
-
-The product source is [docs/PRD.md](docs/PRD.md). See [docs/VERIFICATION.md](docs/VERIFICATION.md) for verification scope and known limitations.
-
-## V1 limitations
-
-This is a local single-user workspace. It uses fresh Pi contexts with the latest 24 conversational messages and up to 30 attributed context artifacts, rather than resuming native Pi session files. Merge previews select source findings, rather than asking a second model to summarize them. CLI/Git must be available locally. Windows installation, large-repository performance, and every model in a proxy catalog require further verification. The optional deterministic demo is enabled only with `JOVE_DEMO=1`.
-
-Read-only tools and scoped writes are application-level checks, not OS-level isolation. Untrusted repository code must not be executed on a sensitive host. Recovery backups help preserve originals but are not a replacement for your normal Git/backup practices.
-
-## Interface styling
-
-Jove uses the [Paper design system](docs/paper-design-system.md) with Tailwind CSS v4. `src/design-system/paper.css` contains only the Tailwind import, PDF color/font/geometry tokens, and global base/accessibility rules. Component styling, state variants, and responsive layouts are Tailwind utilities in `src/design-system/paper.ts` and JSX—not CSS overrides. Geist and Geist Mono are bundled locally.
-
-Use `paper('component-name')` for shared recipes; ordinary Tailwind utilities can be used directly in JSX. Semantic class names remain as DOM/state hooks, not stylesheet selectors. The former Graphite stylesheet and recipes have been removed. See [implementation scope](docs/paper-implementation.md) for remaining product/design gaps.
-
-With Vite running, validate illustrative desktop/mobile UI records without changing your workspace:
+## Development
 
 ```sh
-JOVE_UI_URL=http://127.0.0.1:5173 node --import tsx scripts/check-paper-ui.ts
+npm run format       # Apply Prettier
+npm run check        # Check formatting and TypeScript
+npm test             # Run the test suite
+npm run build        # Build the app
 ```
 
-Install Playwright Chromium first (`npx playwright install chromium`), or supply `PLAYWRIGHT_EXECUTABLE_PATH`. Screenshots default to `/tmp/jove-paper-ui`; override with `JOVE_SCREENSHOTS`.
+The stack is **React · TypeScript · Vite · Tailwind CSS · Express · Pi RPC**. Tests exercise real temporary Git repositories, the local API, frontend workflows, and Pi protocol fixtures.
+
+| Explore                          | Start here                                               |
+| -------------------------------- | -------------------------------------------------------- |
+| Interface and conversations      | [src/App.tsx](src/App.tsx)                               |
+| Markdown and code blocks         | [src/MessageBody.tsx](src/MessageBody.tsx)               |
+| Shared visual styles             | [src/design-system/paper.ts](src/design-system/paper.ts) |
+| Local API and task orchestration | [server/app.ts](server/app.ts)                           |
+| Pi integration                   | [server/pi.ts](server/pi.ts)                             |
+| Product direction                | [Product requirements](docs/PRD.md)                      |
+| Visual language                  | [Paper design system](docs/paper-design-system.md)       |
+
+---
+
+<p align="center">
+  <img src="docs/jove-assets/mascot-color.svg" width="56" alt="Jove's lavender pixel mascot"><br>
+  <em>Stay curious. Bring the useful bits.</em><br>
+  Built by <a href="https://x.com/thegrandimam">@thegrandimam</a>.
+</p>

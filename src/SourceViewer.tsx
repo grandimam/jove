@@ -1,11 +1,115 @@
-import React,{useEffect,useState} from 'react';
-import {FileCode,Search,Lock} from 'lucide-react';
-import {paper as graphite} from './design-system/paper';
-export default function SourceViewer({path,workId}:{path:string;workId:string}){
- const [selected,setSelected]=useState(path),[query,setQuery]=useState(''),[files,setFiles]=useState<string[]>([]),[file,setFile]=useState<any>(null),[error,setError]=useState('');
- useEffect(()=>{let live=true;fetch(`/api/works/${workId}/files`).then(async r=>{const data=await r.json();if(!r.ok)throw new Error(data.error);if(live)setFiles(data.files)}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[workId]);
- const location=selected.match(/^(.*?)(?::(\d+))?(?:-\d+)?$/),filename=location?.[1]||selected,target=Number(location?.[2]||0);
- useEffect(()=>{let live=true;setFile(null);setError('');if(filename)fetch(`/api/works/${workId}/files?path=${encodeURIComponent(filename)}`).then(async r=>{const data=await r.json();if(!r.ok)throw new Error(data.error);if(live)setFile(data)}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[workId,filename]);
- useEffect(()=>{if(file&&target)document.getElementById(`source-line-${target}`)?.scrollIntoView?.({block:'center'})},[file,target]);
- return <><span className={graphite('eyebrow')}><Lock size={12}/> READ-ONLY REPOSITORY</span><h2>Codebase explorer</h2><div className={graphite('source-search')}><Search size={14}/><input aria-label="Filter repository files" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Find files, tests, or dependencies…"/></div><div className={graphite('source-explorer')}><nav aria-label="Repository files">{files.filter(f=>f.toLowerCase().includes(query.toLowerCase())).map(f=><button className={f===filename?'active':''} key={f} onClick={()=>setSelected(f)}><FileCode size={13}/>{f}</button>)}</nav><section>{error?<p role="alert">{error}</p>:file?<><header>{file.path} · {file.revision.slice(0,8)}<p className="text-xs text-muted">Current workspace contents; recorded findings can refer to earlier revisions.</p></header><pre>{file.content.split('\n').map((line:string,index:number)=><div id={`source-line-${index+1}`} key={index} className={graphite(target===index+1?'source-highlight':'')}><span>{index+1}</span>{line||' '}</div>)}</pre></>:<p>{filename?'Loading source…':'Choose a source file. Investigations cannot modify files.'}</p>}</section></div></>;
+import React, { useEffect, useState } from 'react';
+import { FileCode, Search, Lock } from 'lucide-react';
+import { paper as graphite } from './design-system/paper';
+export default function SourceViewer({ path, workId }: { path: string; workId: string }) {
+  const [selected, setSelected] = useState(path),
+    [query, setQuery] = useState(''),
+    [files, setFiles] = useState<string[]>([]),
+    [file, setFile] = useState<any>(null),
+    [error, setError] = useState('');
+  useEffect(() => {
+    let live = true;
+    fetch(`/api/works/${workId}/files`)
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error);
+        if (live) setFiles(data.files);
+      })
+      .catch((e) => {
+        if (live) setError(e.message);
+      });
+    return () => {
+      live = false;
+    };
+  }, [workId]);
+  const location = selected.match(/^(.*?)(?::(\d+))?(?:-\d+)?$/),
+    filename = location?.[1] || selected,
+    target = Number(location?.[2] || 0);
+  useEffect(() => {
+    let live = true;
+    setFile(null);
+    setError('');
+    if (filename)
+      fetch(`/api/works/${workId}/files?path=${encodeURIComponent(filename)}`)
+        .then(async (r) => {
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error);
+          if (live) setFile(data);
+        })
+        .catch((e) => {
+          if (live) setError(e.message);
+        });
+    return () => {
+      live = false;
+    };
+  }, [workId, filename]);
+  useEffect(() => {
+    if (file && target)
+      document.getElementById(`source-line-${target}`)?.scrollIntoView?.({ block: 'center' });
+  }, [file, target]);
+  return (
+    <>
+      <span className={graphite('eyebrow')}>
+        <Lock size={12} /> READ-ONLY REPOSITORY
+      </span>
+      <h2>Codebase explorer</h2>
+      <div className={graphite('source-search')}>
+        <Search size={14} />
+        <input
+          aria-label="Filter repository files"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Find files, tests, or dependencies…"
+        />
+      </div>
+      <div className={graphite('source-explorer')}>
+        <nav aria-label="Repository files">
+          {files
+            .filter((f) => f.toLowerCase().includes(query.toLowerCase()))
+            .map((f) => (
+              <button
+                className={f === filename ? 'active' : ''}
+                key={f}
+                onClick={() => setSelected(f)}
+              >
+                <FileCode size={13} />
+                {f}
+              </button>
+            ))}
+        </nav>
+        <section>
+          {error ? (
+            <p role="alert">{error}</p>
+          ) : file ? (
+            <>
+              <header>
+                {file.path} · {file.revision.slice(0, 8)}
+                <p className="text-xs text-muted">
+                  Current workspace contents; recorded findings can refer to earlier revisions.
+                </p>
+              </header>
+              <pre>
+                {file.content.split('\n').map((line: string, index: number) => (
+                  <div
+                    id={`source-line-${index + 1}`}
+                    key={index}
+                    className={graphite(target === index + 1 ? 'source-highlight' : '')}
+                  >
+                    <span>{index + 1}</span>
+                    {line || ' '}
+                  </div>
+                ))}
+              </pre>
+            </>
+          ) : (
+            <p>
+              {filename
+                ? 'Loading source…'
+                : 'Choose a source file. Investigations cannot modify files.'}
+            </p>
+          )}
+        </section>
+      </div>
+    </>
+  );
 }

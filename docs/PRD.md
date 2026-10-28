@@ -1,15 +1,17 @@
 # Jove — Product Requirements Document
 
-**Version:** 1.0 (V1)  
-**Date:** October 28, 2026  
-**Website concept:** jove.run  
-**Status:** Product definition
+> Product direction and requirements. For the current interface and supported workflows, start with the [README](../README.md).
+
+- **Version:** 1.0 (V1)
+- **Date:** October 28, 2026
+- **Website concept:** jove.run
+- **Status:** Product definition
 
 ## 1. Overview
 
 Jove is an AI-assisted software development workspace for exploring unfamiliar codebases from multiple angles without losing the main implementation thread. Developers can **clip** context into a focused investigation, **merge** useful findings into another investigation, or **implement** directly from any investigation.
 
-**Core promise:** *Investigate freely. Merge what matters. Implement when ready.*
+**Core promise:** _Investigate freely. Merge what matters. Implement when ready._
 
 Jove is not a general-purpose chat organizer or a Git worktree manager. Its primary abstraction is a piece of work and the investigations that contribute to it.
 
@@ -24,7 +26,7 @@ When developers work in unfamiliar repositories, a single AI conversation become
 - Managing multiple terminals, branches, and worktrees explicitly.
 - Having no clean way to convert one investigation into an implementation.
 
-**Key insight:** The *work* is the unit of organization. Investigations are separate reasoning contexts within that work.
+**Key insight:** The _work_ is the unit of organization. Investigations are separate reasoning contexts within that work.
 
 ## 3. Goals and non-goals
 
@@ -90,17 +92,7 @@ Three areas, with no dedicated graph or insights dashboard:
 
 Implementation appears as a focused execution view showing activity, diff, terminal, tests, and summary. It should not permanently crowd the investigation UI.
 
-### Reference A — Clip and merge
-
-![Jove clip-and-merge interaction](jove-assets/clip-and-merge.png)
-
-*Visual reference only. The final V1 should omit any explicit worktree-management navigation and use Project → Work → Investigations.*
-
-### Reference B — Investigation to implementation
-
-![Jove investigation-to-implementation concept](jove-assets/investigate-merge-implement.png)
-
-*Visual reference only. The implementation surface should open as a focused view, not a permanently visible dashboard.*
+Current interface screenshots and the latest user flow are in the [README](../README.md).
 
 ## 6. Core workflows and requirements
 
@@ -116,7 +108,7 @@ Implementation appears as a focused execution view showing activity, diff, termi
 - Open the main investigation when ready.
 - Recover gracefully from worktree setup failures; do not silently overwrite existing directories or branches.
 
-**Acceptance:** The user can create work without encountering the words *worktree*, *branch name*, or *directory path* in the normal flow.
+**Acceptance:** The user can create work without encountering the words _worktree_, _branch name_, or _directory path_ in the normal flow.
 
 ### 6.2 Clip into investigation (P0)
 
@@ -224,16 +216,16 @@ This is a **conceptual schema**, not a prescribed file format. The artifact must
 
 ## 8. Primary UI actions
 
-| Surface | Primary action | Secondary actions |
-|---|---|---|
-| Project | New work | Switch project |
-| Work | Open main | Archive, reveal technical details |
-| Investigation | Send message | Clip, switch model, rename |
-| Selected content | Clip | Copy, inspect source |
-| Child investigation | Merge into Main | Implement, merge elsewhere |
-| Main investigation | Implement | Create child investigation |
-| Handoff preview | Start implementation | Edit scope, choose model, cancel |
-| Implementation | Review changes | Pause/interrupt, tests, terminal, resume |
+| Surface             | Primary action       | Secondary actions                        |
+| ------------------- | -------------------- | ---------------------------------------- |
+| Project             | New work             | Switch project                           |
+| Work                | Open main            | Archive, reveal technical details        |
+| Investigation       | Send message         | Clip, switch model, rename               |
+| Selected content    | Clip                 | Copy, inspect source                     |
+| Child investigation | Merge into Main      | Implement, merge elsewhere               |
+| Main investigation  | Implement            | Create child investigation               |
+| Handoff preview     | Start implementation | Edit scope, choose model, cancel         |
+| Implementation      | Review changes       | Pause/interrupt, tests, terminal, resume |
 
 ## 9. UX principles
 

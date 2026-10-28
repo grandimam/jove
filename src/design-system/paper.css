@@ -81,7 +81,9 @@
     font-variant-numeric: tabular-nums;
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation: none !important;
       transition: none !important;
       scroll-behavior: auto !important;
@@ -90,11 +92,33 @@
 }
 
 @keyframes mascot-blink {
-  0%, 42%, 46%, 74%, 78%, 100% { transform: scaleY(1); }
-  44%, 76% { transform: scaleY(0.15); }
+  0%,
+  42%,
+  46%,
+  74%,
+  78%,
+  100% {
+    transform: scaleY(1);
+  }
+  44%,
+  76% {
+    transform: scaleY(0.15);
+  }
 }
 @keyframes mascot-glance {
-  0%, 18%, 43%, 68%, 100% { transform: translateX(0); }
-  24%, 36% { transform: translateX(1px); }
-  75%, 88% { transform: translateX(-1px); }
+  0%,
+  18%,
+  43%,
+  68%,
+  100% {
+    transform: translateX(0);
+  }
+  24%,
+  36% {
+    transform: translateX(1px);
+  }
+  75%,
+  88% {
+    transform: translateX(-1px);
+  }
 }
