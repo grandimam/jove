@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-canvas: #18191b;
+  --color-surface: #202124;
+  --color-selection: #2b2d31;
+  --color-line: #34363b;
+  --color-control: #777b84;
+  --color-chalk: #e6e7e9;
+  --color-muted: #9a9da5;
+  --color-success: #4ade80;
+  --color-success-surface: #163324;
+  --color-attention: #fbbf24;
+  --color-attention-surface: #352b17;
+  --color-error: #f87171;
+  --color-error-surface: #381f23;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+}
