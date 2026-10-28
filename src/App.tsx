@@ -1818,6 +1818,7 @@ function Conversation({ inv }: { inv: Investigation }) {
     setSourceId,
     setError,
   } = useContext(AppContext) as AppContextValue;
+  const [pendingMessage, setPendingMessage] = useState<Message | null>(null);
   const [draft, setDraft] = useState(''),
     [sending, setSending] = useState(false),
     [stream, setStream] = useState<NonNullable<State['chatProgress']>[number] | null>(null);
@@ -1828,6 +1829,16 @@ function Conversation({ inv }: { inv: Investigation }) {
     input.current?.focus();
   }, [inv.id]);
   const messages = state.messages.filter((m) => m.investigationId === inv.id);
+  const showPending =
+    pendingMessage &&
+    !messages.some((message) => message.clientMessageId === pendingMessage.clientMessageId);
+  useEffect(() => {
+    if (
+      pendingMessage &&
+      messages.some((message) => message.clientMessageId === pendingMessage.clientMessageId)
+    )
+      setPendingMessage(null);
+  }, [messages, pendingMessage]);
   const progress = stream || state.chatProgress?.find((p) => p.investigationId === inv.id);
   const working = sending || !!progress;
   const available = state.providers.some((p) => p.id === inv.model && p.available);
@@ -1844,20 +1855,31 @@ function Conversation({ inv }: { inv: Investigation }) {
   useEffect(() => {
     if (follow.current && scroll.current)
       scroll.current.scrollTop = messages.length || working ? scroll.current.scrollHeight : 0;
-  }, [messages.length, progress?.text, progress?.activity.length]);
+  }, [messages.length, pendingMessage?.id, working, progress?.text, progress?.activity.length]);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft.trim() || working || !available) return;
     const content = draft;
+    const clientMessageId = crypto.randomUUID();
+    setPendingMessage({
+      id: clientMessageId,
+      clientMessageId,
+      investigationId: inv.id,
+      role: 'user',
+      content,
+      createdAt: new Date().toISOString(),
+    });
     setDraft('');
     setSending(true);
     follow.current = true;
     try {
-      await api(`/investigations/${inv.id}/messages`, { content });
+      await api(`/investigations/${inv.id}/messages`, { content, clientMessageId });
       await refresh();
     } catch (e) {
       setError((e as Error).message);
       setDraft(content);
+      await refresh();
+      setPendingMessage(null);
     } finally {
       setSending(false);
       setStream(null);
@@ -1894,6 +1916,7 @@ function Conversation({ inv }: { inv: Investigation }) {
           .map((message) => (
             <ConsoleOutput key={message.id} message={message} />
           ))}
+        {showPending && <ConsoleOutput message={pendingMessage} pending />}
         {working && (
           <article
             className={graphite('console-output assistant')}
@@ -1997,7 +2020,7 @@ function Conversation({ inv }: { inv: Investigation }) {
   );
 }
 
-function ConsoleOutput({ message }: { message: Message }) {
+function ConsoleOutput({ message, pending = false }: { message: Message; pending?: boolean }) {
   const {
     state,
     work,
@@ -2131,7 +2154,14 @@ function ConsoleOutput({ message }: { message: Message }) {
   return (
     <article
       className={graphite('console-output ' + message.role)}
-      aria-label={message.role === 'assistant' ? 'Assistant response' : undefined}
+      aria-label={
+        message.role === 'assistant'
+          ? 'Assistant response'
+          : message.role === 'user'
+            ? 'Your message'
+            : undefined
+      }
+      aria-busy={pending || undefined}
       id={'message-' + message.id}
     >
       <div className={graphite('console-output-heading')}>
@@ -2174,23 +2204,29 @@ function ConsoleOutput({ message }: { message: Message }) {
         </button>
       )}
       <div className={graphite('console-output-content')} ref={content}>
-        <MessageContent content={message.content} onClip={(code) => openClip(message, code)} />
+        <MessageContent
+          content={message.content}
+          onClip={pending ? undefined : (code) => openClip(message, code)}
+        />
       </div>
 
       {stale && (
         <span className={graphite('stale-tag')}>Evidence may be stale · codebase changed</span>
       )}
-      <SelectionToolbar
-        content={content}
-        onClip={(text) => openClip(message, text)}
-        onCopy={(text) => void copy(text)}
-        onQueue={
-          message.role === 'assistant' || (message.role === 'artifact' && message.sourceMessageId)
-            ? (text) => openHandoff(message.investigationId, { ...message, content: text })
-            : undefined
-        }
-      />
+      {!pending && (
+        <SelectionToolbar
+          content={content}
+          onClip={(text) => openClip(message, text)}
+          onCopy={(text) => void copy(text)}
+          onQueue={
+            message.role === 'assistant' || (message.role === 'artifact' && message.sourceMessageId)
+              ? (text) => openHandoff(message.investigationId, { ...message, content: text })
+              : undefined
+          }
+        />
+      )}
       <div
+        hidden={pending}
         className={graphite('console-inline-actions')}
         role="toolbar"
         aria-label="Message actions"

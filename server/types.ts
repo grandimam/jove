@@ -30,6 +30,7 @@ export interface Investigation {
   sourceMessageId?: string;
 }
 export interface Message {
+  clientMessageId?: string;
   id: string;
   investigationId: string;
   role: 'user' | 'assistant' | 'artifact';

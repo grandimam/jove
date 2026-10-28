@@ -861,7 +861,12 @@ export function createApp(options: Config = {}) {
       const history = state.messages
         .filter((m) => m.investigationId === inv!.id)
         .map((m) => ({ role: m.role, content: m.content }));
-      addMessage(inv, 'user', content);
+      addMessage(inv, 'user', content, {
+        clientMessageId:
+          typeof req.body.clientMessageId === 'string'
+            ? req.body.clientMessageId.slice(0, 100)
+            : undefined,
+      });
       busyChats.add(inv.id);
       ownsChat = true;
       save();

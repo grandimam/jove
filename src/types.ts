@@ -27,6 +27,7 @@ export type Investigation = {
   createdAt: string;
 };
 export type Message = {
+  clientMessageId?: string;
   id: string;
   investigationId: string;
   role: 'user' | 'assistant' | 'artifact';

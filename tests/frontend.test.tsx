@@ -417,3 +417,51 @@ test('home resumes a project and its examples do not create conversations or tas
     await ctx.close();
   }
 });
+
+test('sending displays the user before the assistant immediately and reconciles without duplicates', async () => {
+  const ctx = await setup();
+  const request = globalThis.fetch;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  globalThis.fetch = (async (input, init) => {
+    if (String(input).endsWith('/messages') && init?.method === 'POST') await gate;
+    return request(input, init);
+  }) as typeof fetch;
+  try {
+    const content = 'Show my question before the thinking indicator';
+    await ctx.user.type(screen.getByRole('textbox', { name: 'Message General' }), content);
+    await ctx.user.click(screen.getByRole('button', { name: 'Send message' }));
+    const user = screen.getByText(content).closest('article')!;
+    const assistant = screen.getByRole('article', { name: 'Assistant responding' });
+    assert.equal(user.getAttribute('aria-busy'), 'true');
+    assert.ok(
+      user.compareDocumentPosition(assistant) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    assert.equal(
+      ctx.backend.state.messages.some((m) => m.content === content),
+      false,
+    );
+    await act(async () => {
+      release();
+    });
+    await waitFor(() =>
+      assert.equal(screen.queryByRole('article', { name: 'Assistant responding' }), null),
+    );
+    const saved = ctx.backend.state.messages.find(
+      (m) => m.role === 'user' && m.content === content,
+    )!;
+    assert.ok(saved.clientMessageId);
+    assert.equal(
+      screen
+        .getAllByRole('article', { name: 'Your message' })
+        .filter((item) => item.textContent?.includes(content)).length,
+      1,
+    );
+    assert.equal(document.querySelector('[aria-busy="true"]'), null);
+  } finally {
+    release();
+    await ctx.close();
+  }
+});
