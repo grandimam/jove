@@ -1,0 +1,29 @@
+import {JSDOM} from 'jsdom';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import type {Server} from 'node:http';
+import React from 'react';
+import {createApp} from '../server/app.js';
+const dom=new JSDOM('<!doctype html><html><body></body></html>',{url:'http://localhost'});
+Object.assign(globalThis,{window:dom.window,document:dom.window.document,HTMLElement:dom.window.HTMLElement,HTMLInputElement:dom.window.HTMLInputElement,HTMLTextAreaElement:dom.window.HTMLTextAreaElement,MutationObserver:dom.window.MutationObserver,IS_REACT_ACT_ENVIRONMENT:true});
+Object.defineProperty(globalThis,'navigator',{value:dom.window.navigator,configurable:true});
+const {render,screen,within,waitFor,cleanup,act}=await import('@testing-library/react');
+const {default:userEvent}=await import('@testing-library/user-event');
+const {default:App}=await import('../src/App.js');
+const originalFetch=globalThis.fetch;
+async function setup(){const dataDir=fs.mkdtempSync(path.join(os.tmpdir(),'jove-ui-'));const backend=createApp({dataDir,stepDelay:25});const server=await new Promise<Server>(resolve=>{const s=backend.app.listen(0,'127.0.0.1',()=>resolve(s))});const address=server.address() as any;globalThis.fetch=((input:any,init:any)=>originalFetch(typeof input==='string'&&input.startsWith('/api')?`http://127.0.0.1:${address.port}${input}`:input,init)) as typeof fetch;render(<App/>);await screen.findByRole('heading',{name:'Main investigation'});return {backend,user:userEvent.setup({document:dom.window.document}),async close(){cleanup();globalThis.fetch=originalFetch;backend.close();await new Promise<void>(resolve=>server.close(()=>resolve()));fs.rmSync(dataDir,{recursive:true,force:true})}}}
+test('UI clips context, preserves drafts during refresh, merges selected findings, and implements from child',async()=>{const ctx=await setup();try{
+const composer=screen.getByRole('textbox',{name:'Message Main investigation'});await ctx.user.type(composer,'Keep this unfinished thought');await act(async()=>{await new Promise(r=>setTimeout(r,2200))});assert.equal((composer as HTMLTextAreaElement).value,'Keep this unfinished thought');
+await ctx.user.click(screen.getAllByRole('button',{name:'Clip'})[1]);const dialog=screen.getByRole('dialog');await ctx.user.type(within(dialog).getByRole('textbox',{name:'Name'}),'Missing history');await ctx.user.click(within(dialog).getByRole('button',{name:'Clip context'}));await screen.findByRole('heading',{name:'Missing history'});assert.ok(screen.getByText('From Main investigation'));
+const childComposer=screen.getByRole('textbox',{name:'Message Missing history'});await ctx.user.type(childComposer,'What is the risk?');const child=childComposer.closest('section')!;await ctx.user.click(within(child).getByRole('button',{name:'Send message'}));await screen.findByText('This is a deterministic local demonstration, not an AI answer. Choose a configured live provider for open-ended investigation.');
+await ctx.user.click(within(child).getByRole('button',{name:'Merge'}));const merge=screen.getByRole('dialog');assert.ok(within(merge).getByText('Context only. No code is changed.'));await ctx.user.click(within(merge).getByRole('button',{name:'Merge findings'}));await screen.findByText('Findings merged. Both histories preserved.');
+const side=screen.getByRole('heading',{name:'Missing history'}).closest('section')!;await ctx.user.click(within(side).getAllByRole('button',{name:'Implement'})[0]);const handoff=screen.getByRole('dialog');assert.ok(within(handoff).getByText(/Demo executes a fixed example patch/));await ctx.user.click(within(handoff).getByRole('button',{name:'Approve & implement'}));await screen.findByText('completed',{exact:true});await ctx.user.click(screen.getByRole('button',{name:'Tests'}));await screen.findByText('passed',{exact:true});assert.ok(screen.getByText(/missing financial history is safely ineligible/));assert.equal(ctx.backend.state.runs[0].investigationId,ctx.backend.state.investigations.find(i=>i.title==='Missing history')!.id);
+}finally{await ctx.close()}});
+test('UI creates project and work, cancels dialog without mutation, and opens provider settings',async()=>{const ctx=await setup();try{
+await ctx.user.click(screen.getByRole('button',{name:'New project'}));let dialog=screen.getByRole('dialog');await ctx.user.type(within(dialog).getByRole('textbox',{name:'Name'}),'Cancelled project');await ctx.user.click(within(dialog).getByRole('button',{name:'Cancel'}));assert.equal(ctx.backend.state.projects.length,1);
+await ctx.user.click(screen.getByRole('button',{name:'New project'}));dialog=screen.getByRole('dialog');await ctx.user.type(within(dialog).getByRole('textbox',{name:'Name'}),'Integration project');await ctx.user.click(within(dialog).getByRole('button',{name:'Open project'}));await waitFor(()=>assert.equal(ctx.backend.state.projects.length,2));await screen.findByRole('button',{name:'Start new work'});await ctx.user.click(screen.getByRole('button',{name:'Start new work'}));dialog=screen.getByRole('dialog');await ctx.user.type(within(dialog).getByRole('textbox',{name:'Work objective'}),'Test fresh work');await ctx.user.click(within(dialog).getByRole('button',{name:'Create work'}));await waitFor(()=>assert.equal(ctx.backend.state.works.length,2));await screen.findByRole('heading',{name:'Main investigation'});assert.equal(ctx.backend.state.works.at(-1)!.title,'Test fresh work');
+await ctx.user.click(screen.getByRole('button',{name:'Settings & providers'}));assert.ok(screen.getByRole('heading',{name:'Bring your own intelligence.'}));assert.ok(screen.getByText('Unavailable',{exact:true}));await ctx.user.click(screen.getByRole('button',{name:'Done'}));assert.equal(screen.queryByRole('dialog'),null);
+}finally{await ctx.close()}});
